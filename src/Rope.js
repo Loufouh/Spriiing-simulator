@@ -1,34 +1,36 @@
 "use strict";
 
 const springLength = 100;
-const springHardness = 0.16;
+const springHardness = 0.56;
 
 let acc;
 
 class Rope {
 	constructor() {
 		this.staticAtom = new RopeAtom(canvas.width/2, canvas.height/2);
-		this.dynamicAtom = new RopeAtom(canvas.width/2 + 100, canvas.height/2);
+		this.dynamicAtom = new RopeAtom(canvas.width/2 + randomInt(-300, 300), canvas.height/2 + randomInt(-300, 300));
 	}
 
 	update() {
 		let springVector = Vector.subtract(this.dynamicAtom.pos, this.staticAtom.pos);
 		let currentSpringLength = springVector.getMagnitude();
-		let forceMagnitude = springHardness*( Math.abs(currentSpringLength - springLength) );
-
-		let angle;
-
-		if(springVector.y < 0 != currentSpringLength < springLength)
-			angle = Math.acos(-springVector.x/currentSpringLength);
-		else
-			angle = -Math.acos(-springVector.x/currentSpringLength);
 		
-		this.dynamicAtom.applyForce( Vector.multiply(Vector.unit(angle), forceMagnitude) );
-		this.dynamicAtom.applyForce( new Vector(0, 9) );
+		if(currentSpringLength > springLength) {
+			let forceMagnitude = springHardness*( Math.abs(currentSpringLength - springLength) );
+	
+			let angle;
+		
+			if(springVector.y < 0)
+				angle = Math.acos(-springVector.x/currentSpringLength);
+			else
+				angle = -Math.acos(-springVector.x/currentSpringLength);
+			
+			this.dynamicAtom.applyForce( Vector.multiply(Vector.unit(angle), forceMagnitude) );
+		}
 
+		this.dynamicAtom.applyForce( new Vector(0, 4) );
 		// apply air frictions
 		this.dynamicAtom.applyForce( Vector.multiply(this.dynamicAtom.speed, -0.08) );
-		
 		acc = this.dynamicAtom.acc.copy();
 
 		this.dynamicAtom.update();
