@@ -1,7 +1,7 @@
 "use strict";
 
 const springLength = 100;
-const springHardness = 0.56;
+const springHardness = 0.12;
 
 let acc;
 
@@ -9,6 +9,7 @@ class Rope {
 	constructor() {
 		this.staticAtom = new RopeAtom(canvas.width/2, canvas.height/2);
 		this.dynamicAtom = new RopeAtom(canvas.width/2 + randomInt(-300, 300), canvas.height/2 + randomInt(-300, 300));
+		this.dynamicAtom2 = new RopeAtom(canvas.width/2 + randomInt(-300, 300), canvas.height/2 + randomInt(-300, 300));
 	}
 
 	update() {
@@ -17,7 +18,6 @@ class Rope {
 		
 		if(currentSpringLength > springLength) {
 			let forceMagnitude = springHardness*( Math.abs(currentSpringLength - springLength) );
-	
 			let angle;
 		
 			if(springVector.y < 0)
@@ -28,21 +28,41 @@ class Rope {
 			this.dynamicAtom.applyForce( Vector.multiply(Vector.unit(angle), forceMagnitude) );
 		}
 
+		springVector = Vector.subtract(this.dynamicAtom2.pos, this.dynamicAtom.pos);
+		currentSpringLength = springVector.getMagnitude();
+
+		if(currentSpringLength > springLength) {
+			let forceMagnitude = springHardness*( Math.abs(currentSpringLength - springLength) );
+			let angle;
+		
+			if(springVector.y < 0)
+				angle = Math.acos(-springVector.x/currentSpringLength);
+			else
+				angle = -Math.acos(-springVector.x/currentSpringLength);
+			
+			this.dynamicAtom.applyForce( Vector.multiply(Vector.unit(angle), -forceMagnitude) );
+			this.dynamicAtom2.applyForce( Vector.multiply(Vector.unit(angle), forceMagnitude) );
+		}
+
 		this.dynamicAtom.applyForce( new Vector(0, 4) );
+		this.dynamicAtom2.applyForce( new Vector(0, 4) );
 		// apply air frictions
 		this.dynamicAtom.applyForce( Vector.multiply(this.dynamicAtom.speed, -0.08) );
-		acc = this.dynamicAtom.acc.copy();
+		this.dynamicAtom2.applyForce( Vector.multiply(this.dynamicAtom.speed, -0.08) );
 
 		this.dynamicAtom.update();
+		this.dynamicAtom2.update();
 	}
 
 	draw() {
 		stroke(new Color(255));
 
 		line(this.dynamicAtom.pos.x, this.dynamicAtom.pos.y, this.staticAtom.pos.x, this.staticAtom.pos.y);
+		line(this.dynamicAtom2.pos.x, this.dynamicAtom2.pos.y, this.dynamicAtom.pos.x, this.dynamicAtom.pos.y);
 
 		this.staticAtom.draw();
 		this.dynamicAtom.draw();
+		this.dynamicAtom2.draw();
 
 		/*
 			DEBUG SPEED
