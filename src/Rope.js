@@ -25,6 +25,8 @@ class Rope {
 		
 		this.dynamicAtom.applyForce( Vector.multiply(Vector.unit(angle), forceMagnitude) );
 		this.dynamicAtom.applyForce( new Vector(0, 9) );
+
+		// apply air frictions
 		this.dynamicAtom.applyForce( Vector.multiply(this.dynamicAtom.speed, -0.08) );
 		
 		acc = this.dynamicAtom.acc.copy();
