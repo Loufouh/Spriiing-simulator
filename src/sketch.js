@@ -1,12 +1,12 @@
 "use strict";
 
-let rope;
 let isModifying = false;
+let rope;
 
 function setup() {
-	canvas.addEventListener("click", clickCanvas);
+	canvas.addEventListener("mousedown", click);
+	canvas.addEventListener("mouseup", click);
 	canvas.addEventListener("mousemove", move);
-
 	rope = new Rope();
 }
 
@@ -17,27 +17,14 @@ function loop() {
 	rope.draw();
 }
 
-function clickCanvas() {
+function click() {
 	isModifying = 1 - isModifying;
-
-	if(isModifying) {
-		stopLooping();
-
-		rope.dynamicAtom.speed = new Vector(0, 0)
-		rope.dynamicAtom.acc = new Vector(0, 0)
-	} else {
-		startLooping();
-	}
 }
 
 function move(e) {
 	if(isModifying) {
 		let rect = e.target.getBoundingClientRect();
 
-		rope.dynamicAtom.pos = new Vector(e.clientX - rect.left, e.clientY - rect.top)
-
-		background( new Color(200, 100, 10, 1, ColorType.HSL) );
-		rope.draw();
+		rope.staticAtom.pos = new Vector(e.clientX - rect.left, e.clientY - rect.top);
 	}
 }
-

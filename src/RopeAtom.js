@@ -21,6 +21,21 @@ class RopeAtom {
 		circle(this.pos.x, this.pos.y, 10);
 	}
 
+	applyAtomForce(pos) {
+		let springVector = Vector.subtract(this.pos, pos);
+		let currentSpringLength = springVector.getMagnitude();
+
+		if(currentSpringLength > SPRING_LENGTH) {
+			let forceMagnitude = SPRING_HARDNESS*( Math.abs(currentSpringLength - SPRING_LENGTH) );
+			let angle = Math.acos(-springVector.x/currentSpringLength);
+
+			if(springVector.y >= 0)
+				angle *= -1;
+
+			this.applyForce( Vector.multiply( Vector.unit(angle), forceMagnitude) );
+		}
+	}
+
 	applyForce(force) {
 		this.acc.add(force);
 	}

@@ -1,82 +1,51 @@
 "use strict";
 
-const springLength = 100;
-const springHardness = 0.12;
+const GRAVITY = 1;
+
+const SPRING_LENGTH = 30;
+const SPRING_HARDNESS = 0.8;
 
 let acc;
 
 class Rope {
 	constructor() {
-		this.staticAtom = new RopeAtom(canvas.width/2, canvas.height/2);
-		this.dynamicAtom = new RopeAtom(canvas.width/2 + randomInt(-300, 300), canvas.height/2 + randomInt(-300, 300));
-		this.dynamicAtom2 = new RopeAtom(canvas.width/2 + randomInt(-300, 300), canvas.height/2 + randomInt(-300, 300));
+		this.staticAtom = new RopeAtom(canvas.width/2, 20);
+		this.dynamicAtoms = [];
+
+		for(let i = 0; i < 12; i++)
+			this.dynamicAtoms.push( new RopeAtom(canvas.width/2 + randomInt(20, 20), 20 + randomInt(-20, 20)) );
 	}
 
 	update() {
-		let springVector = Vector.subtract(this.dynamicAtom.pos, this.staticAtom.pos);
-		let currentSpringLength = springVector.getMagnitude();
-		
-		if(currentSpringLength > springLength) {
-			let forceMagnitude = springHardness*( Math.abs(currentSpringLength - springLength) );
-			let angle;
-		
-			if(springVector.y < 0)
-				angle = Math.acos(-springVector.x/currentSpringLength);
-			else
-				angle = -Math.acos(-springVector.x/currentSpringLength);
-			
-			this.dynamicAtom.applyForce( Vector.multiply(Vector.unit(angle), forceMagnitude) );
+		this.dynamicAtoms[0].applyAtomForce(this.staticAtom.pos);
+
+		for(let i = 1; i < this.dynamicAtoms.length - 1; i++) {
+			this.dynamicAtoms[i].applyAtomForce(this.dynamicAtoms[i - 1].pos);
+			this.dynamicAtoms[i].applyAtomForce(this.dynamicAtoms[i + 1].pos);
 		}
 
-		springVector = Vector.subtract(this.dynamicAtom2.pos, this.dynamicAtom.pos);
-		currentSpringLength = springVector.getMagnitude();
+		this.dynamicAtoms[ this.dynamicAtoms.length - 1 ].applyAtomForce(this.dynamicAtoms[ this.dynamicAtoms.length - 2 ].pos);
 
-		if(currentSpringLength > springLength) {
-			let forceMagnitude = springHardness*( Math.abs(currentSpringLength - springLength) );
-			let angle;
-		
-			if(springVector.y < 0)
-				angle = Math.acos(-springVector.x/currentSpringLength);
-			else
-				angle = -Math.acos(-springVector.x/currentSpringLength);
-			
-			this.dynamicAtom.applyForce( Vector.multiply(Vector.unit(angle), -forceMagnitude) );
-			this.dynamicAtom2.applyForce( Vector.multiply(Vector.unit(angle), forceMagnitude) );
+		for(let i = 0; i < this.dynamicAtoms.length; i++) {
+			this.dynamicAtoms[i].applyForce( new Vector(0, GRAVITY) );
+			this.dynamicAtoms[i].applyForce( Vector.multiply(this.dynamicAtoms[i].speed, -0.40) );
+			this.dynamicAtoms[i].update();
 		}
-
-		this.dynamicAtom.applyForce( new Vector(0, 4) );
-		this.dynamicAtom2.applyForce( new Vector(0, 4) );
-		// apply air frictions
-		this.dynamicAtom.applyForce( Vector.multiply(this.dynamicAtom.speed, -0.08) );
-		this.dynamicAtom2.applyForce( Vector.multiply(this.dynamicAtom.speed, -0.08) );
-
-		this.dynamicAtom.update();
-		this.dynamicAtom2.update();
 	}
 
 	draw() {
 		stroke(new Color(255));
 
-		line(this.dynamicAtom.pos.x, this.dynamicAtom.pos.y, this.staticAtom.pos.x, this.staticAtom.pos.y);
-		line(this.dynamicAtom2.pos.x, this.dynamicAtom2.pos.y, this.dynamicAtom.pos.x, this.dynamicAtom.pos.y);
-
 		this.staticAtom.draw();
-		this.dynamicAtom.draw();
-		this.dynamicAtom2.draw();
 
-		/*
-			DEBUG SPEED
+		for(let i = 0; i < this.dynamicAtoms.length; i++)
+			this.dynamicAtoms[i].draw();
 
-		stroke( new Color(255, 52, 52) )
+		line(this.staticAtom.pos.x, this.staticAtom.pos.y, this.dynamicAtoms[0].pos.x, this.dynamicAtoms[0].pos.y);
 
-		let p1 = new Vector(this.dynamicAtom.pos.x + 20, this.dynamicAtom.pos.y) 
-		let p2 = new Vector(this.dynamicAtom.pos.x + 10*acc.x + 20, this.dynamicAtom.pos.y + 10*acc.y)
+		for(let i = 1; i < this.dynamicAtoms.length; i++)
+			line(this.dynamicAtoms[i - 1].pos.x, this.dynamicAtoms[i - 1].pos.y,
+				this.dynamicAtoms[i].pos.x, this.dynamicAtoms[i].pos.y);
 
-		line(p1.x, p1.y, p2.x, p2.y);
-
-		fill(new Color(255, 52, 52) );
-
-		circle(p2.x, p2.y, 5);
-		*/
 	}
 }
